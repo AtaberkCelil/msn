@@ -35,16 +35,15 @@ namespace Server
             _listener = new HttpListener();
             try
             {
-                _listener.Prefixes.Add($"http://*:{_port}/");
+                // '+' is the standard way to bind to all interfaces in HttpListener for both Windows and Linux
+                _listener.Prefixes.Add($"http://+:{_port}/");
                 _listener.Start();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[HTTP Server] Could not bind to wildcard port {_port} (needs admin rights): {ex.Message}");
-                Console.WriteLine("[HTTP Server] Falling back to localhost/127.0.0.1 bindings...");
+                Console.WriteLine($"[HTTP Server] Could not bind using '+'. Trying '*'. Error: {ex.Message}");
                 _listener = new HttpListener();
-                _listener.Prefixes.Add($"http://localhost:{_port}/");
-                _listener.Prefixes.Add($"http://127.0.0.1:{_port}/");
+                _listener.Prefixes.Add($"http://*:{_port}/");
                 _listener.Start();
             }
 
