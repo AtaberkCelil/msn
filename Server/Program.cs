@@ -49,7 +49,24 @@ namespace Server
             // --- Environment variable overrides (for cloud deployment) ---
             // DATABASE_URL takes priority over appsettings connection string
             string? envDb = Environment.GetEnvironmentVariable("DATABASE_URL");
-            if (!string.IsNullOrEmpty(envDb)) connStr = envDb;
+            if (!string.IsNullOrEmpty(envDb))
+            {
+                if (envDb.StartsWith("mysql://", StringComparison.OrdinalIgnoreCase))
+                {
+                    var uri = new Uri(envDb);
+                    string dbHost = uri.Host;
+                    int dbPort = uri.IsDefaultPort ? 3306 : uri.Port;
+                    string dbName = uri.AbsolutePath.Trim('/');
+                    string[] userInfo = uri.UserInfo.Split(':');
+                    string dbUid = userInfo.Length > 0 ? userInfo[0] : "root";
+                    string dbPwd = userInfo.Length > 1 ? userInfo[1] : "";
+                    connStr = $"Server={dbHost};Port={dbPort};Database={dbName};Uid={dbUid};Pwd={dbPwd};";
+                }
+                else
+                {
+                    connStr = envDb;
+                }
+            }
 
             // TCP_PORT override
             string? envTcp = Environment.GetEnvironmentVariable("TCP_PORT");
