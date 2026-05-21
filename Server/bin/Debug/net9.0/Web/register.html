@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows Live Account Registration</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <!-- Nostalgic MSN Logo in SVG -->
+            <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Blue Buddy -->
+                <ellipse cx="38" cy="30" rx="14" ry="14" fill="#00a2ed" />
+                <path d="M15,70 C15,50 30,45 38,45 C46,45 61,50 61,70 L61,80 L15,80 Z" fill="#0078d7" />
+                <!-- Green Buddy -->
+                <ellipse cx="62" cy="40" rx="12" ry="12" fill="#8cc63f" />
+                <path d="M44,75 C44,58 56,54 62,54 C68,54 80,58 80,75 L80,80 L44,80 Z" fill="#60b034" />
+                <!-- Orange Butterfly (MSN) wings hint -->
+                <path d="M48,22 C43,15 52,10 54,18 Z" fill="#ffb900" />
+            </svg>
+            <h1>Windows Live</h1>
+            <p>Create your messenger credentials</p>
+        </div>
+
+        <div id="errorAlert" class="alert alert-danger" style="display:none;"></div>
+        <div id="successAlert" class="alert alert-success" style="display:none;"></div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="email">Sign-in address (Email)</label>
+                <input type="email" id="email" required placeholder="example@live.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required placeholder="Choose a password">
+            </div>
+
+            <div class="form-group">
+                <label for="displayName">Display Name</label>
+                <input type="text" id="displayName" required placeholder="e.g. GuestUser">
+            </div>
+
+            <button type="submit" class="btn">Register Account</button>
+        </form>
+
+        <div class="footer-links">
+            Already registered? <a href="/upload">Upload avatar here</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const errorAlert = document.getElementById('errorAlert');
+            const successAlert = document.getElementById('successAlert');
+            
+            errorAlert.style.display = 'none';
+            successAlert.style.display = 'none';
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const displayName = document.getElementById('displayName').value;
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password, displayName })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    successAlert.textContent = "Registration successful! You can now sign in on the desktop client or set your avatar.";
+                    successAlert.style.display = 'block';
+                    document.getElementById('registerForm').reset();
+                } else {
+                    errorAlert.textContent = data.error || "An error occurred during registration.";
+                    errorAlert.style.display = 'block';
+                }
+            } catch (err) {
+                errorAlert.textContent = "Could not connect to the registration server.";
+                errorAlert.style.display = 'block';
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>

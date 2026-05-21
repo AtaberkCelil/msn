@@ -1,0 +1,127 @@
+<Window x:Class="Client.ChatWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Client"
+        mc:Ignorable="d"
+        Title="Conversation" Height="450" Width="480"
+        WindowStartupLocation="CenterOwner" Background="#F1F5F9"
+        FontFamily="Segoe UI" Loaded="Window_Loaded">
+    
+    <Grid>
+        <!-- Blue Gradient Wave Background -->
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#F0F9FF" Offset="0.0"/>
+                <GradientStop Color="#F8FAFC" Offset="0.3"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Grid.RowDefinitions>
+            <!-- Top profile header -->
+            <RowDefinition Height="Auto"/>
+            <!-- Messages history -->
+            <RowDefinition Height="*"/>
+            <!-- Toolbar (nudge, emoticons) -->
+            <RowDefinition Height="Auto"/>
+            <!-- Text Input box -->
+            <RowDefinition Height="100"/>
+        </Grid.RowDefinitions>
+
+        <!-- TOP CONVERSATION HEADER -->
+        <Border Grid.Row="0" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="15,10" Background="rgba(255,255,255,0.4)">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock x:Name="LblContactName" Text="Contact Name" FontSize="14" FontWeight="Bold" Foreground="#0F172A"/>
+                        <TextBlock x:Name="LblContactStatus" Text=" (Online)" FontSize="11" Foreground="#64748B" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock x:Name="LblContactSign" Text="Contact custom message signature..." FontSize="11" Foreground="#475569" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <!-- Contact Avatar Picture -->
+                <Grid Grid.Column="1" Width="42" Height="42" VerticalAlignment="Center">
+                    <Border BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8" Background="White" ClipToBounds="True">
+                        <Grid>
+                            <!-- Fallback Avatar -->
+                            <Viewbox Stretch="Uniform" Margin="6">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" Fill="#94A3B8"/>
+                                </Canvas>
+                            </Viewbox>
+                            <Image x:Name="ImgContactAvatar" Stretch="UniformToFill"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- CHAT CONVERSATION HISTORY -->
+        <ScrollViewer Grid.Row="1" x:Name="Scroller" VerticalScrollBarVisibility="Auto" Padding="15,10">
+            <ItemsControl x:Name="LstMessages">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,0,0,8">
+                            <!-- Standard Message Template -->
+                            <StackPanel x:Name="StandardMsg" Visibility="Visible">
+                                <TextBlock FontSize="11" Foreground="#475569" Margin="0,0,0,2">
+                                    <Run Text="{Binding SenderName}" FontWeight="SemiBold"/>
+                                    <Run Text=" says (" />
+                                    <Run Text="{Binding Timestamp}" />
+                                    <Run Text="):" />
+                                </TextBlock>
+                                <TextBlock Text="{Binding Content}" FontSize="13" Foreground="#0F172A" TextWrapping="Wrap" Margin="10,0,0,0"/>
+                            </StackPanel>
+
+                            <!-- System/Nudge Message Template -->
+                            <TextBlock x:Name="SystemMsg" Text="{Binding Content}" FontSize="12" FontWeight="SemiBold" Foreground="#EF4444" HorizontalAlignment="Center" Margin="5" Visibility="Collapsed"/>
+                        </Grid>
+                        
+                        <!-- Trigger to toggle system message visibility vs standard message -->
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsSystem}" Value="True">
+                                <Setter TargetName="StandardMsg" Property="Visibility" Value="Collapsed"/>
+                                <Setter TargetName="SystemMsg" Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- TOOLBAR (EMOTICONS / NUDGE) -->
+        <Border Grid.Row="2" BorderBrush="#E2E8F0" BorderThickness="0,1,0,1" Padding="10,4" Background="#F8FAFC">
+            <StackPanel Orientation="Horizontal">
+                <!-- Emoticon picker button -->
+                <Button x:Name="BtnEmoticon" Content="😊 Emoticons" Width="95" Height="26" Background="Transparent" BorderThickness="0" FontSize="11" Cursor="Hand" Click="BtnEmoticon_Click"/>
+                
+                <!-- Send Nudge button -->
+                <Button x:Name="BtnNudge" Content="⚡ Send a Nudge" Width="110" Height="26" Background="Transparent" BorderThickness="0" FontSize="11" FontWeight="SemiBold" Foreground="#EF4444" Cursor="Hand" Click="BtnNudge_Click" Margin="5,0,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- TEXT INPUT SECTION -->
+        <Grid Grid.Row="3" Background="White">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="80"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Column="0" x:Name="TxtInput" BorderThickness="0" Padding="15" AcceptsReturn="True" TextWrapping="Wrap" FontSize="13" KeyDown="TxtInput_KeyDown" Focusable="True" VerticalScrollBarVisibility="Auto"/>
+            
+            <Button Grid.Column="1" x:Name="BtnSend" Content="Send" Height="36" Margin="10" Background="#0284C7" Foreground="White" BorderThickness="0" FontSize="13" FontWeight="SemiBold" Cursor="Hand" Click="BtnSend_Click" VerticalAlignment="Bottom">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </Grid>
+    </Grid>
+</Window>

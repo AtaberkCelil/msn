@@ -1,0 +1,239 @@
+<Window x:Class="Client.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Client"
+        mc:Ignorable="d"
+        Title="Windows Live Messenger" Height="620" Width="360"
+        WindowStartupLocation="CenterScreen" Background="#F1F5F9"
+        FontFamily="Segoe UI" Closing="Window_Closing">
+    
+    <Window.Resources>
+        <!-- Converter or template to draw placeholder avatar if AvatarUrl is empty -->
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        
+        <!-- Status dot color selection helper -->
+        <local:StatusColorConverter x:Key="StatusColorConv"/>
+
+        <!-- Context Menu for Contacts -->
+        <ContextMenu x:Key="ContactContextMenu">
+            <MenuItem Header="Send a Message" Click="MenuSendMessage_Click" FontWeight="Bold"/>
+            <Separator/>
+            <MenuItem x:Name="MenuBlock" Header="Block Contact" Click="MenuBlock_Click"/>
+            <MenuItem x:Name="MenuUnblock" Header="Unblock Contact" Click="MenuUnblock_Click"/>
+            <Separator/>
+            <MenuItem Header="Remove Contact" Click="MenuRemove_Click"/>
+        </ContextMenu>
+
+        <!-- Contact Item Template -->
+        <DataTemplate x:Key="ContactTemplate">
+            <Grid Margin="5,4" ContextMenu="{StaticResource ContactContextMenu}" Background="Transparent" MouseDown="ContactItem_MouseDown">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Status indicator and mini avatar -->
+                <Grid Grid.Column="0" Margin="0,0,10,0">
+                    <Grid Width="36" Height="36">
+                        <!-- Avatar Image border -->
+                        <Border BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Background="#E2E8F0" ClipToBounds="True">
+                            <Grid>
+                                <!-- Fallback SVG vector representation -->
+                                <Viewbox Stretch="Uniform" Margin="4">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Data="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" Fill="#94A3B8"/>
+                                    </Canvas>
+                                </Viewbox>
+                                <!-- Real Avatar Image -->
+                                <Image Source="{Binding AvatarUrl}" Stretch="UniformToFill">
+                                    <Image.Style>
+                                        <Style TargetType="Image">
+                                            <Style.Triggers>
+                                                <Trigger Property="Source" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+                            </Grid>
+                        </Border>
+                        
+                        <!-- Status dot on bottom-right of avatar -->
+                        <Ellipse Width="10" Height="10" 
+                                 Fill="{Binding Status, Converter={StaticResource StatusColorConv}}" 
+                                 HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                 Stroke="White" StrokeThickness="1.5" Margin="0,0,-2,-2"/>
+                    </Grid>
+                </Grid>
+
+                <!-- Contact details -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="13" Foreground="#1E293B"/>
+                        <!-- Blocked tag if blocked -->
+                        <TextBlock Text=" (Blocked)" FontSize="11" Foreground="#EF4444" Margin="5,0,0,0" VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding RelationType}" Value="blocked">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+                    
+                    <TextBlock Text="{Binding CustomSign}" FontSize="11" Foreground="#64748B" TextTrimming="CharacterEllipsis" Margin="0,2,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <Trigger Property="Text" Value="">
+                                        <Setter Property="Text" Value="&lt;No personal message&gt;"/>
+                                        <Setter Property="FontStyle" Value="Italic"/>
+                                        <Setter Property="Opacity" Value="0.6"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Status Text hint on right -->
+                <TextBlock Grid.Column="2" Text="{Binding Status}" FontSize="10" Foreground="#94A3B8" VerticalAlignment="Center" Margin="5,0,0,0"/>
+            </Grid>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <!-- Blue Gradient Wave Background -->
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#E0F2FE" Offset="0.0"/>
+                <GradientStop Color="#F8FAFC" Offset="0.25"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Grid.RowDefinitions>
+            <!-- User Profile Header -->
+            <RowDefinition Height="Auto"/>
+            <!-- Search Contact Box -->
+            <RowDefinition Height="Auto"/>
+            <!-- Buddy List -->
+            <RowDefinition Height="*"/>
+            <!-- Add Contact Bar -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- USER PROFILE HEADER -->
+        <Border Grid.Row="0" Padding="15,15,15,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- User Avatar -->
+                <Grid Grid.Column="0" Margin="0,0,12,0" Width="60" Height="60">
+                    <Border BorderBrush="#BAE6FD" BorderThickness="2" CornerRadius="10" Background="White" ClipToBounds="True">
+                        <Grid>
+                            <!-- Fallback Buddy Icon -->
+                            <Viewbox Stretch="Uniform" Margin="8">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" Fill="#94A3B8"/>
+                                </Canvas>
+                            </Viewbox>
+                            <Image x:Name="ImgUserAvatar" Stretch="UniformToFill"/>
+                        </Grid>
+                    </Border>
+                    <!-- Double click avatar to open upload page -->
+                    <Border CornerRadius="10" Background="Transparent" Cursor="Hand" ToolTip="Double click to change avatar" MouseDown="Avatar_MouseDown"/>
+                </Grid>
+
+                <!-- User Details & Presence Selection -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                        <!-- Display Name (Static) -->
+                        <TextBlock x:Name="LblDisplayName" Text="Display Name" FontSize="15" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
+                        
+                        <!-- Status selector ComboBox -->
+                        <ComboBox x:Name="CmbUserStatus" Margin="8,0,0,0" Width="95" Height="22" FontSize="11" SelectionChanged="CmbUserStatus_SelectionChanged">
+                            <ComboBox.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                </Style>
+                            </ComboBox.Resources>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Signature Message (Editable) -->
+                    <Grid>
+                        <TextBox x:Name="TxtCustomSign" Text="Share a quick personal message..." BorderThickness="0" Background="Transparent" FontSize="12" Foreground="#475569" ToolTip="Click to edit personal message" KeyDown="TxtCustomSign_KeyDown" LostFocus="TxtCustomSign_LostFocus"/>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- SEARCH BAR -->
+        <Grid Grid.Row="1" Margin="15,0,15,8">
+            <TextBox x:Name="TxtSearch" Height="28" Padding="24,4,8,4" VerticalContentAlignment="Center" BorderBrush="#CBD5E1" Background="White" FontSize="12" TextChanged="TxtSearch_TextChanged">
+                <TextBox.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6"/>
+                    </Style>
+                </TextBox.Resources>
+            </TextBox>
+            <!-- Magnifying Glass Icon -->
+            <Path Data="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L19.71,19L18.29,20.41L13.03,15.15C11.89,16.12 10.41,16.7 9.5,16.7A6.5,6.5 0 0,1 3,10.2A6.5,6.5 0 0,1 9.5,3M9.5,5A4.5,4.5 0 0,0 5,9.5A4.5,4.5 0 0,0 9.5,14A4.5,4.5 0 0,0 14,9.5A4.5,4.5 0 0,0 9.5,5Z" 
+                  Fill="#94A3B8" Width="14" Height="14" HorizontalAlignment="Left" Margin="22,0,0,0" VerticalAlignment="Center"/>
+            </Grid>
+
+        <!-- CONTACT BUDDY LIST -->
+        <Grid Grid.Row="2" Margin="15,0,15,5">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <!-- ONLINE GROUP -->
+                    <Expander x:Name="ExpOnline" Header="Online" IsExpanded="True" BorderBrush="Transparent" Background="Transparent" FontWeight="SemiBold" Foreground="#0284C7" FontSize="13">
+                        <ItemsControl x:Name="LstOnlineContacts" ItemTemplate="{StaticResource ContactTemplate}" Margin="0,5,0,10"/>
+                    </Expander>
+
+                    <!-- OFFLINE GROUP -->
+                    <Expander x:Name="ExpOffline" Header="Offline" IsExpanded="True" BorderBrush="Transparent" Background="Transparent" FontWeight="SemiBold" Foreground="#64748B" FontSize="13" Margin="0,5,0,0">
+                        <ItemsControl x:Name="LstOfflineContacts" ItemTemplate="{StaticResource ContactTemplate}" Margin="0,5,0,10"/>
+                    </Expander>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- ADD CONTACT BAR -->
+        <Border Grid.Row="3" BorderBrush="#E2E8F0" BorderThickness="0,1,0,0" Padding="15,10" Background="#F8FAFC">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="TxtAddEmail" Height="28" Padding="8,4" VerticalContentAlignment="Center" BorderBrush="#CBD5E1" Background="White" FontSize="12" Margin="0,0,8,0">
+                    <TextBox.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6"/>
+                        </Style>
+                    </TextBox.Resources>
+                </TextBox>
+                
+                <Button Grid.Column="1" x:Name="BtnAddContact" Content="Add" Width="60" Height="28" Background="#0284C7" Foreground="White" BorderThickness="0" FontSize="12" FontWeight="SemiBold" Cursor="Hand" Click="BtnAddContact_Click">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

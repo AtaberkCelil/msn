@@ -1,0 +1,12 @@
+{
+  "ServerIp": "127.0.0.1",
+  "ServerTcpPort": 1863,
+  "ServerHttpUrl": "http://localhost:8080",
+  "AesKey": "WLM_MESSENGER_SECRET_KEY_32BYTES!",
+  "AesIV": "WLM_INIT_VECTOR16",
+  "RememberEmail": "",
+  "SavedPassword": "",
+  "RememberMe": false,
+  "RememberPassword": false,
+  "AutoLogin": false
+}

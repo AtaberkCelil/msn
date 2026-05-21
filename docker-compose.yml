@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: wlm_root_pass
+      MYSQL_DATABASE: wlm_messenger
+      MYSQL_USER: wlm_user
+      MYSQL_PASSWORD: wlm_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./Database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"   # HTTP web portal
+      - "1863:1863"   # TCP messenger protocol
+    environment:
+      DATABASE_URL: "Server=db;Database=wlm_messenger;Uid=wlm_user;Pwd=wlm_pass;"
+      HTTP_PORT: "8080"
+      TCP_PORT: "1863"
+      AES_KEY: "WLM_MESSENGER_SECRET_KEY_32BYTES!"
+      AES_IV:  "WLM_INIT_VECTOR16"
+
+volumes:
+  mysql_data:

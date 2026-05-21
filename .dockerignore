@@ -1,0 +1,22 @@
+# Build artifacts
+**/bin/
+**/obj/
+**/.vs/
+
+# Git
+.git/
+.gitignore
+
+# IDE files
+*.user
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Don't include the WPF client in the server image
+Client/
+
+# Local runtime data
+Client/config.json

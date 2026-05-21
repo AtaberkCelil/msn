@@ -1,0 +1,45 @@
+<Window x:Class="Client.ToastNotification"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Notification" Height="90" Width="260"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ShowInTaskbar="False" Topmost="True" ResizeMode="NoResize"
+        FontFamily="Segoe UI" Loaded="Window_Loaded">
+    
+    <Border BorderBrush="#BAE6FD" BorderThickness="1.5" CornerRadius="12" Margin="5" Padding="10" ClipToBounds="True">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#F0F9FF" Offset="0.0"/>
+                <GradientStop Color="#E0F2FE" Offset="1.0"/>
+            </LinearGradientBrush>
+        </Border.Background>
+        
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- MSN Buddy Logo indicator in Toast -->
+            <Grid Grid.Column="0" Width="36" Height="36" Margin="0,0,10,0" VerticalAlignment="Center">
+                <Border CornerRadius="8" Background="#BAE6FD" Padding="4">
+                    <Viewbox Stretch="Uniform">
+                        <Canvas Width="24" Height="24">
+                            <!-- Dual Buddy Vector shape -->
+                            <Path Data="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" Fill="#0284C7"/>
+                        </Canvas>
+                    </Viewbox>
+                </Border>
+            </Grid>
+
+            <!-- Message info -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock x:Name="LblTitle" Text="User logged in" FontSize="12" FontWeight="Bold" Foreground="#0284C7" TextTrimming="CharacterEllipsis"/>
+                <TextBlock x:Name="LblMessage" Text="Hey there! Let's chat." FontSize="11" Foreground="#475569" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
